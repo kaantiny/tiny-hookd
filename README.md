@@ -24,6 +24,10 @@ cp .env.example .env     # add your OPENAI_API_KEY + GITHUB_TOKEN
 docker compose up --build
 ```
 
+Then open:
+- **Webhooks:** http://localhost:8080
+- **Script Editor:** http://localhost:8081 (default login: `admin` / `admin`)
+
 Test it:
 ```bash
 curl http://localhost:8080/examples/hello.sh
@@ -109,6 +113,14 @@ curl -X POST http://localhost:8080/qodo/full-suite.sh \
 
 **Auto-review:** Point a GitHub webhook (pull_request events) at `/qodo/github-webhook.py` to auto-review on PR open and re-review on push.
 
+## Script Editor (Filebrowser)
+
+The stack includes [Filebrowser](https://filebrowser.org) at `:8081` — a clean web UI to browse, edit, and create scripts directly in the browser.
+
+A `chmod-watcher` sidecar automatically makes any `.sh`, `.py`, or `.bash` file executable when created or modified, so scripts saved through the editor are immediately runnable by webhookd.
+
+Default credentials: `admin` / `admin` (change on first login).
+
 ## Environment Variables
 
 | Variable | Required | Description |
@@ -117,6 +129,7 @@ curl -X POST http://localhost:8080/qodo/full-suite.sh \
 | `GITHUB_TOKEN` | For Qodo | GitHub PAT with `repo` scope |
 | `LLM_BASE_URL` | No | Custom base URL (proxies, local LLMs) |
 | `LLM_MODEL` | No | Default model (default: `gpt-4o-mini`) |
+| `EDITOR_PORT` | No | Filebrowser port (default: `8081`) |
 
 ## License
 

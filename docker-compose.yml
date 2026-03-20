@@ -17,10 +17,50 @@ services:
       - WHD_SCRIPTS=/var/opt/webhookd/scripts
       - WHD_LOG_LEVEL=${WHD_LOG_LEVEL:-info}
     volumes:
-      - ./scripts:/var/opt/webhookd/scripts:ro
+      - scripts:/var/opt/webhookd/scripts:ro
       - ./logs:/var/log/webhookd
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/"]
       interval: 30s
       timeout: 5s
       retries: 3
+
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: tiny-hookd-editor
+    restart: unless-stopped
+    ports:
+      - "${EDITOR_PORT:-8081}:80"
+    volumes:
+      - scripts:/srv
+      - filebrowser_db:/database
+      - ./filebrowser.json:/.filebrowser.json:ro
+    environment:
+      - FB_DATABASE=/database/filebrowser.db
+
+  # Ensures new/edited files are executable by webhookd
+  chmod-watcher:
+    image: debian:bookworm-slim
+    container_name: tiny-hookd-chmod
+    restart: unless-stopped
+    volumes:
+      - scripts:/watch
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        apt-get update -qq && apt-get install -y -qq inotify-tools > /dev/null 2>&1
+        echo "chmod-watcher: watching /watch for new/modified scripts..."
+        inotifywait -m -r -e create -e modify -e moved_to /watch --format '%w%f' | while read FILE; do
+          if [[ "$$FILE" =~ \.(sh|py|bash)$$ ]]; then
+            chmod +x "$$FILE" 2>/dev/null && echo "chmod-watcher: +x $$FILE"
+          fi
+        done
+
+volumes:
+  scripts:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/scripts
+  filebrowser_db:
