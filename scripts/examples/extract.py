@@ -4,15 +4,13 @@ Webhook: Extract structured data from unstructured text
 POST /examples/extract.py
 Body: { "text": "Call me at 555-1234, my email is john@example.com", "fields": ["name", "phone", "email"] }
 """
-import sys
-import json
-sys.path.insert(0, "/var/opt/webhookd/scripts")
+import sys, os, json
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from lib.llm import ask_json
 
 payload = json.loads(sys.stdin.read())
 text = payload.get("text", "")
 fields = payload.get("fields", ["name", "email", "phone", "date", "address"])
-
 fields_str = ", ".join(fields)
 
 result = ask_json(

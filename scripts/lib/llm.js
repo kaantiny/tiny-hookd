@@ -31,7 +31,7 @@
  *   const vec = await embed("Hello world");
  *
  * Env vars:
- *   LLM_API_KEY    / OPENAI_API_KEY   - API key (required)
+ *   OPENAI_API_KEY                    - API key (required)
  *   LLM_BASE_URL   / OPENAI_BASE_URL  - Base URL (optional, for proxies/local)
  *   LLM_MODEL      / OPENAI_MODEL     - Default model (default: gpt-4o-mini)
  *   LLM_TEMPERATURE                   - Default temperature (default: 0.7)
@@ -39,11 +39,11 @@
  */
 
 const { OpenAI } = require('openai');
-const pRetry = require('p-retry');
+const pRetry = require('p-retry'); // pinned to v4 (CommonJS)
 
 // --------------- Config from env ---------------
 
-const API_KEY = process.env.LLM_API_KEY || process.env.OPENAI_API_KEY;
+const API_KEY = process.env.OPENAI_API_KEY;
 const BASE_URL = process.env.LLM_BASE_URL || process.env.OPENAI_BASE_URL || undefined;
 const DEFAULT_MODEL = process.env.LLM_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const DEFAULT_TEMP = parseFloat(process.env.LLM_TEMPERATURE || '0.7');

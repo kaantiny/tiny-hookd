@@ -4,9 +4,8 @@ Webhook: Translate text to any language
 POST /examples/translate.py
 Body: { "text": "Hello world", "to": "Vietnamese" }
 """
-import sys
-import json
-sys.path.insert(0, "/var/opt/webhookd/scripts")
+import sys, os, json
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from lib.llm import ask
 
 payload = json.loads(sys.stdin.read())

@@ -30,9 +30,9 @@ Usage:
     vec = embed("Hello world")
 
 Env vars:
-    LLM_API_KEY    / OPENAI_API_KEY   - API key (required)
+    OPENAI_API_KEY                    - API key (required)
     LLM_BASE_URL   / OPENAI_BASE_URL  - Base URL (optional, for proxies/local)
-    LLM_MODEL      / OPENAI_MODEL     - Default model (default: gpt-4o-mini)
+    LLM_MODEL                         - Default model (default: gpt-4o-mini)
     LLM_TEMPERATURE                   - Default temperature (default: 0.7)
     LLM_MAX_TOKENS                    - Default max tokens (default: 4096)
 """
@@ -45,9 +45,9 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 
 # --------------- Config from env ---------------
 
-API_KEY = os.getenv("LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+API_KEY = os.getenv("OPENAI_API_KEY")
 BASE_URL = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL") or None
-DEFAULT_MODEL = os.getenv("LLM_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
+DEFAULT_MODEL = os.getenv("LLM_MODEL") or "gpt-4o-mini"
 DEFAULT_TEMP = float(os.getenv("LLM_TEMPERATURE", "0.7"))
 DEFAULT_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "4096"))
 

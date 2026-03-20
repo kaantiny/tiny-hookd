@@ -4,15 +4,16 @@
  * POST /examples/generate-sql.js
  * Body: { "question": "How many users signed up last week?", "schema": "users(id, name, email, created_at)" }
  */
-const { askJson } = require('../lib/llm');
+const path = require('path');
+const { askJson } = require(path.join(__dirname, '..', 'lib', 'llm'));
 
 async function main() {
-  let payload = '';
+  let body = '';
   process.stdin.setEncoding('utf8');
-  process.stdin.on('data', (c) => (payload += c));
+  process.stdin.on('data', (c) => (body += c));
   await new Promise((r) => process.stdin.on('end', r));
 
-  const data = JSON.parse(payload);
+  const data = JSON.parse(body);
   const question = data.question || '';
   const schema = data.schema || 'No schema provided';
   const dialect = data.dialect || 'PostgreSQL';
@@ -20,10 +21,7 @@ async function main() {
   const result = await askJson(
     `Database schema:\n${schema}\n\nQuestion: ${question}`,
     {
-      system: `You are a SQL expert. Convert natural language to ${dialect} SQL. Return JSON with:
-- sql (the SQL query)
-- explanation (brief explanation of what the query does)
-- tables_used (array of table names)`,
+      system: `You are a SQL expert. Convert natural language to ${dialect} SQL. Return JSON: sql, explanation, tables_used (array).`,
       temperature: 0.1,
     }
   );

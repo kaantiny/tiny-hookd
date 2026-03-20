@@ -4,110 +4,26 @@ services:
   webhookd:
     build:
       context: .
-      dockerfile: Dockerfile.webhookd
-      args:
-        # Pin a specific version or use "latest"
-        WEBHOOKD_VERSION: latest
-    image: webhookd-full:latest
-    container_name: webhookd
-    
-    # Restart policy
+      dockerfile: Dockerfile
+    container_name: tiny-hookd
     restart: unless-stopped
-    
-    # Ports
     ports:
-      - "8080:8080"
-    
-    # Environment variables
+      - "${WEBHOOKD_PORT:-8080}:8080"
     environment:
-      # Webhookd settings
-      - WEBHOOKD_SCRIPTS_DIR=/var/opt/webhookd/scripts
-      - WEBHOOKD_HOOKS_DIR=/var/opt/webhookd/hooks
-      - WEBHOOKD_LOG_LEVEL=info
-      - WEBHOOKD_LOG_FORMAT=text
-      # Uncomment to enable HTTP basic auth
-      # - WEBHOOKD_HOOKS_USER=admin
-      # - WEBHOOKD_HOOKS_PASS=secretpassword
-      # Uncomment to enable signature verification (HMAC)
-      # - WEBHOOKD_HOOKS_SECRET=your-webhook-secret
-      # Uncomment to set timeout (default: 10s)
-      # - WEBHOOKD_TIMEOUT=30s
-      
-      # API keys for LLM scripts (inject via .env or here)
-      # - OPENAI_API_KEY=${OPENAI_API_KEY}
-      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      # - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      
-      # Qodo / PR-Agent
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    
-    # Volumes
+      # LLM
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      # Qodo / GitHub
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # webhookd
+      - WHD_SCRIPTS=/var/opt/webhookd/scripts
+      - WHD_LOG_LEVEL=${WHD_LOG_LEVEL:-info}
     volumes:
-      # Mount your scripts directory
       - ./scripts:/var/opt/webhookd/scripts:ro
-      # Optional: persist logs
       - ./logs:/var/log/webhookd
-      # Optional: mount env file for secrets
-      - ./.env:/var/opt/webhookd/.env:ro
-    
-    # Working directory
-    working_dir: /var/opt/webhookd
-    
-    # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health", "||", "exit", "1"]
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 10s
-    
-    # Resource limits (optional)
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '1.0'
-    #       memory: 512M
-    #     reservations:
-    #       cpus: '0.25'
-    #       memory: 128M
-    
-    # Networks
-    networks:
-      - webhookd-net
-
-  # Optional: Redis for caching/state (uncomment if needed)
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: webhookd-redis
-  #   restart: unless-stopped
-  #   volumes:
-  #     - redis-data:/data
-  #   networks:
-  #     - webhookd-net
-
-  # Optional: Nginx reverse proxy (uncomment for SSL/production)
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: webhookd-nginx
-  #   restart: unless-stopped
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - ./ssl:/etc/nginx/ssl:ro
-  #   depends_on:
-  #     - webhookd
-  #   networks:
-  #     - webhookd-net
-
-# Networks
-networks:
-  webhookd-net:
-    driver: bridge
-
-# Volumes
-volumes:
-  # redis-data:
-  #   driver: local

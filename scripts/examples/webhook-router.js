@@ -3,26 +3,20 @@
  * Webhook: Classify incoming webhooks and decide action
  * POST /examples/webhook-router.js
  * Body: any JSON payload (GitHub, Stripe, etc.)
- * 
- * Uses AI to understand the webhook and suggest routing.
  */
-const { askJson } = require('../lib/llm');
+const path = require('path');
+const { askJson } = require(path.join(__dirname, '..', 'lib', 'llm'));
 
 async function main() {
-  let payload = '';
+  let body = '';
   process.stdin.setEncoding('utf8');
-  process.stdin.on('data', (c) => (payload += c));
+  process.stdin.on('data', (c) => (body += c));
   await new Promise((r) => process.stdin.on('end', r));
 
   const result = await askJson(
-    `Analyze this webhook payload and classify it:\n\n${payload}`,
+    `Analyze this webhook payload and classify it:\n\n${body}`,
     {
-      system: `You analyze webhook payloads. Return JSON with:
-- source (e.g. "github", "stripe", "slack", "unknown")
-- event_type (e.g. "push", "payment_success", "message")
-- priority ("high", "medium", "low")
-- summary (one sentence)
-- suggested_actions (array of action strings)`,
+      system: `Return JSON: source (github/stripe/slack/unknown), event_type, priority (high/medium/low), summary, suggested_actions (array).`,
       temperature: 0.2,
     }
   );
