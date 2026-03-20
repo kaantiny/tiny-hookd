@@ -4,9 +4,9 @@ Webhook: Analyze sentiment of text
 POST /examples/sentiment.py
 Body: { "text": "I love this product! Best purchase ever." }
 """
-import sys, os, json
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from lib.llm import ask_json
+import sys
+import json
+from tiny_hookd import ask_json
 
 payload = json.loads(sys.stdin.read())
 text = payload.get("text", "")

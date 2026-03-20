@@ -1,40 +1,31 @@
 """
-llm.py - Battery-included LLM wrapper
+tiny_hookd.llm — Battery-included LLM wrapper.
 
-Usage:
-    from lib.llm import ask, chat, stream, embed
+Usage (from any Python script on the system):
 
-    # One-liner
+    from tiny_hookd import ask, chat, stream, ask_json, embed
+
     answer = ask("What is 2+2?")
-
-    # With system prompt
     answer = ask("Summarize this", system="You are a summarizer")
-
-    # Override model per-call
     answer = ask("Hello", model="gpt-4o")
 
-    # Multi-turn conversation
     answer = chat([
         {"role": "system", "content": "You are helpful"},
         {"role": "user", "content": "Hi"},
     ])
 
-    # Streaming
     for chunk in stream("Tell me a story"):
         print(chunk, end="", flush=True)
 
-    # JSON mode
     data = ask_json("List 3 colors as a JSON array")
-
-    # Embeddings
     vec = embed("Hello world")
 
 Env vars:
-    OPENAI_API_KEY                    - API key (required)
+    OPENAI_API_KEY                     - API key (required)
     LLM_BASE_URL   / OPENAI_BASE_URL  - Base URL (optional, for proxies/local)
-    LLM_MODEL                         - Default model (default: gpt-4o-mini)
-    LLM_TEMPERATURE                   - Default temperature (default: 0.7)
-    LLM_MAX_TOKENS                    - Default max tokens (default: 4096)
+    LLM_MODEL                          - Default model (default: gpt-4o-mini)
+    LLM_TEMPERATURE                    - Default temperature (default: 0.7)
+    LLM_MAX_TOKENS                     - Default max tokens (default: 4096)
 """
 
 import os
@@ -57,6 +48,7 @@ _client: Optional[OpenAI] = None
 
 
 def get_client() -> OpenAI:
+    """Get or create the singleton OpenAI client."""
     global _client
     if _client is None:
         kwargs = {}

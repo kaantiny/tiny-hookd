@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tiny-hookd-llm"
+version = "0.1.0"
+description = "Battery-included LLM wrapper for tiny-hookd webhook scripts"
+requires-python = ">=3.10"
+dependencies = [
+    "openai",
+    "tenacity",
+]
+
+[project.scripts]
+llm-ask = "tiny_hookd.cli:main"

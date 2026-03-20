@@ -54,7 +54,6 @@ def main():
         print(json.dumps({"status": "skipped", "reason": "Not a pull_request event"}))
         return
 
-    # Skip draft PRs
     if pr.get("draft", False):
         print(json.dumps({"status": "skipped", "reason": "Draft PR"}))
         return

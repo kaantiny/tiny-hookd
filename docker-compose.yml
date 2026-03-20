@@ -10,13 +10,10 @@ services:
     ports:
       - "${WEBHOOKD_PORT:-8080}:8080"
     environment:
-      # LLM
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - LLM_BASE_URL=${LLM_BASE_URL:-}
       - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
-      # Qodo / GitHub
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-      # webhookd
       - WHD_SCRIPTS=/var/opt/webhookd/scripts
       - WHD_LOG_LEVEL=${WHD_LOG_LEVEL:-info}
     volumes:

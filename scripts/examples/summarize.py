@@ -6,9 +6,9 @@ Body: { "text": "long article here...", "style": "bullet" }
 
 Styles: brief | bullet | eli5 | tweet
 """
-import sys, os, json
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from lib.llm import ask
+import sys
+import json
+from tiny_hookd import ask
 
 STYLES = {
     "brief":  "Summarize in 2-3 sentences:",

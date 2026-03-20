@@ -1,6 +1,6 @@
 # tiny-hookd 🪝
 
-Battery-included [webhookd](https://github.com/ncarlier/webhookd) Docker image with **Node.js**, **Python**, **LLM libs**, **Qodo Merge** (PR-Agent), and **GitHub CLI** baked in.
+Battery-included [webhookd](https://github.com/ncarlier/webhookd) Docker image with **Python**, **Qodo Merge**, and **GitHub CLI** baked in.
 
 Drop a script → get an HTTP endpoint. That's it.
 
@@ -9,11 +9,11 @@ Drop a script → get an HTTP endpoint. That's it.
 | Layer | Included |
 |-------|----------|
 | **webhookd** | Latest release — turns scripts into webhooks |
-| **Node.js 20** | openai, @anthropic-ai/sdk, p-retry, axios, typescript |
-| **Python 3.11** | openai, anthropic, tenacity, requests, httpx, pydantic |
+| **Python 3.11** | openai, anthropic, tenacity, requests, httpx, pydantic, rich |
+| **tiny_hookd** | System-installed Python package — `from tiny_hookd import ask` anywhere |
+| **llm-ask** | CLI tool — call the LLM from bash scripts |
 | **Qodo Merge** | `qodo-merge` CLI — AI code review for PRs |
 | **GitHub CLI** | `gh` — interact with GitHub from scripts |
-| **LLM wrapper** | `scripts/lib/llm.py` + `llm.js` — zero-config `ask()` / `chat()` / `stream()` |
 
 ## Quick Start
 
@@ -32,50 +32,63 @@ curl http://localhost:8080/examples/hello.sh
 ## Project Structure
 
 ```
+lib/                          # Python package (installed system-wide in Docker)
+├── pyproject.toml
+└── tiny_hookd/
+    ├── __init__.py
+    ├── llm.py                # ask, chat, stream, ask_json, embed
+    └── cli.py                # llm-ask CLI entrypoint
+
 scripts/
-├── lib/
-│   ├── llm.py          # Python LLM wrapper (ask, chat, stream, ask_json, embed)
-│   └── llm.js          # Node.js LLM wrapper (same API)
 ├── examples/
-│   ├── hello.sh         # Health check
-│   ├── summarize.py     # AI text summarization
-│   ├── translate.py     # AI translation
-│   ├── sentiment.py     # Sentiment analysis
-│   ├── extract.py       # Structured data extraction
-│   ├── chat-bot.js      # Chatbot with personas
-│   ├── webhook-router.js # Classify incoming webhooks
-│   └── generate-sql.js  # Natural language → SQL
+│   ├── hello.sh              # Health check
+│   ├── ask-llm.sh            # Bash → LLM via llm-ask CLI
+│   ├── summarize.py          # AI text summarization
+│   ├── translate.py          # AI translation
+│   ├── sentiment.py          # Sentiment analysis
+│   └── extract.py            # Structured data extraction
 └── qodo/
-    ├── review.sh         # Qodo code review on a PR
-    ├── improve.sh        # Qodo improvement suggestions
-    ├── describe.sh       # Auto-generate PR description
-    ├── full-suite.sh     # Run all 3 sequentially
-    └── github-webhook.py # Auto-router for GitHub PR events
+    ├── review.sh             # Qodo code review on a PR
+    ├── improve.sh            # Qodo improvement suggestions
+    ├── describe.sh            # Auto-generate PR description
+    ├── full-suite.sh         # Run all 3 sequentially
+    └── github-webhook.py     # Auto-router for GitHub PR events
 ```
 
-## LLM Wrapper
+## LLM Library
 
-Zero-config — just set `OPENAI_API_KEY` and import:
+Installed system-wide as `tiny_hookd` — no path hacks, just import:
 
-**Python:**
+### From Python (anywhere)
+
 ```python
-from lib.llm import ask, ask_json, stream
+from tiny_hookd import ask, ask_json, chat, stream, embed
 
 answer = ask("What is Docker?")
+answer = ask("Summarize this", system="Be concise", model="gpt-4o")
 data = ask_json("List 3 colors as JSON")
+
 for chunk in stream("Tell me a story"):
     print(chunk, end="")
 ```
 
-**Node.js:**
-```js
-const { ask, askJson, stream } = require('./lib/llm');
+### From Bash (via `llm-ask` CLI)
 
-const answer = await ask("What is Docker?");
-const data = await askJson("List 3 colors");
-for await (const chunk of stream("Tell me a story")) {
-    process.stdout.write(chunk);
-}
+```bash
+# Simple question
+llm-ask "What is Docker?"
+
+# With system prompt
+llm-ask --system "Be concise" "Explain Kubernetes"
+
+# Pipe input
+echo "Long text here..." | llm-ask --system "Summarize in 1 sentence"
+
+# JSON output
+llm-ask --json "List 3 colors"
+
+# Model override
+llm-ask --model gpt-4o "Complex question"
 ```
 
 Both include automatic retry with exponential backoff on 429 / 5xx errors.

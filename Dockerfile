@@ -16,11 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gpg \
     vim-tiny \
     nano \
-    # Python
     python3 \
     python3-pip \
     python3-venv \
-    # Node.js prerequisites
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================================
@@ -35,14 +33,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================================
-# 3. Node.js 20 LTS
-# ============================================================
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
-# ============================================================
-# 4. webhookd (latest release)
+# 3. webhookd (latest release)
 # ============================================================
 RUN ARCH=$(case "${TARGETARCH}" in \
       amd64) echo "amd64" ;; \
@@ -56,7 +47,7 @@ RUN ARCH=$(case "${TARGETARCH}" in \
     && chmod +x /usr/local/bin/webhookd
 
 # ============================================================
-# 5. Python packages
+# 4. Python packages (system-wide)
 # ============================================================
 RUN pip3 install --no-cache-dir --break-system-packages \
     # LLM SDKs
@@ -79,25 +70,17 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     retry
 
 # ============================================================
-# 6. Node.js packages (global)
+# 5. Install tiny-hookd LLM lib as a proper Python package
 # ============================================================
-RUN npm install -g \
-    openai \
-    @anthropic-ai/sdk \
-    p-retry@4 \
-    async-retry \
-    exponential-backoff \
-    axios \
-    typescript \
-    ts-node \
-    json
+COPY lib/ /opt/tiny-hookd-lib/
+RUN pip3 install --no-cache-dir --break-system-packages /opt/tiny-hookd-lib/ \
+    && rm -rf /opt/tiny-hookd-lib/
 
 # ============================================================
-# 7. Runtime config
+# 6. Runtime config
 # ============================================================
 WORKDIR /var/opt/webhookd
 
-ENV NODE_PATH=/usr/lib/node_modules
 ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8080
