@@ -37,7 +37,21 @@ services:
     environment:
       - FB_DATABASE=/database/filebrowser.db
 
-  # Ensures new/edited files are executable by webhookd
+  dkron:
+    image: dkron/dkron:latest
+    container_name: tiny-hookd-cron
+    restart: unless-stopped
+    ports:
+      - "${CRON_PORT:-8082}:8080"
+    volumes:
+      - dkron_data:/dkron.data
+    command: agent --server --bootstrap-expect=1 --node-name=tiny-hookd
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/v1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   chmod-watcher:
     image: debian:bookworm-slim
     container_name: tiny-hookd-chmod
@@ -63,3 +77,4 @@ volumes:
       o: bind
       device: ${PWD}/scripts
   filebrowser_db:
+  dkron_data:

@@ -14,6 +14,7 @@ Drop a script → get an HTTP endpoint. That's it.
 | **llm-ask** | CLI tool — call the LLM from bash scripts |
 | **GitHub CLI** | `gh` — interact with GitHub from scripts |
 | **Filebrowser** | Web UI to browse/edit scripts in the browser |
+| **Dkron** | Cron scheduler with web UI — schedule HTTP calls to your webhooks |
 
 ## Quick Start
 
@@ -27,6 +28,7 @@ docker compose up --build
 Then open:
 - **Webhooks:** http://localhost:8080
 - **Script Editor:** http://localhost:8081 (default login: `admin` / `admin`)
+- **Cron Scheduler:** http://localhost:8082
 
 Test it:
 ```bash
@@ -91,6 +93,30 @@ llm-ask --model gpt-4o "Complex question"
 
 Both include automatic retry with exponential backoff on 429 / 5xx errors.
 
+## Cron Scheduler (Dkron)
+
+[Dkron](https://dkron.io) at `:8082` — a lightweight cron scheduler with a web UI. Create jobs that call your webhookd scripts on a schedule using the built-in HTTP executor.
+
+**Example:** Create a job via the UI or API:
+
+```bash
+curl -X POST http://localhost:8082/v1/jobs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "daily-summary",
+    "schedule": "@daily",
+    "executor": "http",
+    "executor_config": {
+      "method": "POST",
+      "url": "http://webhookd:8080/examples/summarize.py",
+      "headers": "[\"Content-Type: application/json\"]",
+      "body": "{\"text\": \"Generate daily report\", \"style\": \"bullet\"}"
+    }
+  }'
+```
+
+Jobs use the Docker network name `webhookd` (not `localhost`) to reach webhookd internally.
+
 ## Script Editor (Filebrowser)
 
 The stack includes [Filebrowser](https://filebrowser.org) at `:8081` — a clean web UI to browse, edit, and create scripts directly in the browser.
@@ -107,6 +133,7 @@ Default credentials: `admin` / `admin` (change on first login).
 | `LLM_BASE_URL` | No | Custom base URL (proxies, local LLMs) |
 | `LLM_MODEL` | No | Default model (default: `gpt-4o-mini`) |
 | `EDITOR_PORT` | No | Filebrowser port (default: `8081`) |
+| `CRON_PORT` | No | Dkron port (default: `8082`) |
 
 ## License
 
