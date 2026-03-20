@@ -31,6 +31,8 @@ RUN apt-get update && apt-get install -y \
     # Text processing
     vim-tiny \
     nano \
+    # Docker CLI (for running PR-Agent containers)
+    docker.io \
     # Cleanup
     && rm -rf /var/lib/apt/lists/*
 
