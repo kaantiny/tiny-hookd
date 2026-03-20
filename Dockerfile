@@ -55,8 +55,6 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     anthropic \
     google-generativeai \
     tiktoken \
-    # Qodo Merge (PR-Agent) CLI
-    qodo-merge \
     # HTTP & data
     requests \
     httpx \

@@ -1,6 +1,6 @@
 # tiny-hookd 🪝
 
-Battery-included [webhookd](https://github.com/ncarlier/webhookd) Docker image with **Python**, **Qodo Merge**, and **GitHub CLI** baked in.
+Battery-included [webhookd](https://github.com/ncarlier/webhookd) Docker image with **Python**, **LLM libs**, and a **web editor** baked in.
 
 Drop a script → get an HTTP endpoint. That's it.
 
@@ -12,15 +12,15 @@ Drop a script → get an HTTP endpoint. That's it.
 | **Python 3.11** | openai, anthropic, tenacity, requests, httpx, pydantic, rich |
 | **tiny_hookd** | System-installed Python package — `from tiny_hookd import ask` anywhere |
 | **llm-ask** | CLI tool — call the LLM from bash scripts |
-| **Qodo Merge** | `qodo-merge` CLI — AI code review for PRs |
 | **GitHub CLI** | `gh` — interact with GitHub from scripts |
+| **Filebrowser** | Web UI to browse/edit scripts in the browser |
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/kaantiny/tiny-hookd.git
 cd tiny-hookd
-cp .env.example .env     # add your OPENAI_API_KEY + GITHUB_TOKEN
+cp .env.example .env     # add your OPENAI_API_KEY
 docker compose up --build
 ```
 
@@ -44,19 +44,13 @@ lib/                          # Python package (installed system-wide in Docker)
     └── cli.py                # llm-ask CLI entrypoint
 
 scripts/
-├── examples/
-│   ├── hello.sh              # Health check
-│   ├── ask-llm.sh            # Bash → LLM via llm-ask CLI
-│   ├── summarize.py          # AI text summarization
-│   ├── translate.py          # AI translation
-│   ├── sentiment.py          # Sentiment analysis
-│   └── extract.py            # Structured data extraction
-└── qodo/
-    ├── review.sh             # Qodo code review on a PR
-    ├── improve.sh            # Qodo improvement suggestions
-    ├── describe.sh            # Auto-generate PR description
-    ├── full-suite.sh         # Run all 3 sequentially
-    └── github-webhook.py     # Auto-router for GitHub PR events
+└── examples/
+    ├── hello.sh              # Health check
+    ├── ask-llm.sh            # Bash → LLM via llm-ask CLI
+    ├── summarize.py          # AI text summarization
+    ├── translate.py          # AI translation
+    ├── sentiment.py          # Sentiment analysis
+    └── extract.py            # Structured data extraction
 ```
 
 ## LLM Library
@@ -97,22 +91,6 @@ llm-ask --model gpt-4o "Complex question"
 
 Both include automatic retry with exponential backoff on 429 / 5xx errors.
 
-## Qodo PR Review
-
-Trigger AI code review on any GitHub PR:
-
-```bash
-# Single review
-curl -X POST http://localhost:8080/qodo/review.sh \
-  -d '{"pr_url": "https://github.com/owner/repo/pull/1"}'
-
-# Full suite (describe + review + improve)
-curl -X POST http://localhost:8080/qodo/full-suite.sh \
-  -d '{"pr_url": "https://github.com/owner/repo/pull/1"}'
-```
-
-**Auto-review:** Point a GitHub webhook (pull_request events) at `/qodo/github-webhook.py` to auto-review on PR open and re-review on push.
-
 ## Script Editor (Filebrowser)
 
 The stack includes [Filebrowser](https://filebrowser.org) at `:8081` — a clean web UI to browse, edit, and create scripts directly in the browser.
@@ -125,8 +103,7 @@ Default credentials: `admin` / `admin` (change on first login).
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `OPENAI_API_KEY` | Yes | OpenAI API key (used by LLM lib + Qodo) |
-| `GITHUB_TOKEN` | For Qodo | GitHub PAT with `repo` scope |
+| `OPENAI_API_KEY` | Yes | OpenAI API key |
 | `LLM_BASE_URL` | No | Custom base URL (proxies, local LLMs) |
 | `LLM_MODEL` | No | Default model (default: `gpt-4o-mini`) |
 | `EDITOR_PORT` | No | Filebrowser port (default: `8081`) |
