@@ -3,8 +3,6 @@
 # Webhook: Trigger Qodo Merge code improvement suggestions
 # POST /qodo/improve.sh
 # Body: { "pr_url": "https://github.com/owner/repo/pull/123" }
-#
-# Runs: /improve (actionable code suggestions as comments)
 # ============================================================
 
 set -euo pipefail
@@ -25,12 +23,6 @@ fi
 
 echo "Running Qodo improve on: $PR_URL" >&2
 
-docker run --rm \
-  -e OPENAI_KEY="${OPENAI_API_KEY}" \
-  -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
-  -e CONFIG.GIT_PROVIDER="github" \
-  codiumai/pr-agent:latest \
-  --pr_url "$PR_URL" \
-  improve
+qodo-merge --pr_url "$PR_URL" improve 2>&1
 
 echo "{\"status\": \"ok\", \"action\": \"improve\", \"pr_url\": \"$PR_URL\"}"

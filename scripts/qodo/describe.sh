@@ -3,8 +3,6 @@
 # Webhook: Auto-generate PR description with Qodo
 # POST /qodo/describe.sh
 # Body: { "pr_url": "https://github.com/owner/repo/pull/123" }
-#
-# Runs: /describe (generates PR title, type, summary, walkthrough)
 # ============================================================
 
 set -euo pipefail
@@ -25,12 +23,6 @@ fi
 
 echo "Running Qodo describe on: $PR_URL" >&2
 
-docker run --rm \
-  -e OPENAI_KEY="${OPENAI_API_KEY}" \
-  -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
-  -e CONFIG.GIT_PROVIDER="github" \
-  codiumai/pr-agent:latest \
-  --pr_url "$PR_URL" \
-  describe
+qodo-merge --pr_url "$PR_URL" describe 2>&1
 
 echo "{\"status\": \"ok\", \"action\": \"describe\", \"pr_url\": \"$PR_URL\"}"
